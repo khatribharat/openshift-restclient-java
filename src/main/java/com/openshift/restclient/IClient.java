@@ -104,7 +104,18 @@ public interface IClient extends ICapable, Cloneable {
 	 * @throws OpenShiftException if operation not supported for resource type
 	 */
 	<T extends IResource> T get(String kind, String name, String namespace);
-	
+
+	/**
+	 *
+	 * @param version
+	 * @param kind
+	 * @param name
+	 * @param namespace
+	 * @return
+	 * @throws OpenShiftException if operation not supported for resource type
+	 */
+	<T extends IResource> T get(String version, String kind, String name, String namespace);
+
 	/**
 	 * 
 	 * @return  A raw list of the kind in the given namespace (e.g. ServiceList)
@@ -181,6 +192,20 @@ public interface IClient extends ICapable, Cloneable {
 
 	/**
 	 * Raw execution of a request
+	 * @param httpMethod  HttpMethod (e.g. POST)
+	 * @param version
+	 * @param kind
+	 * @param namespace
+	 * @param name
+	 * @param subresource  subresource or capability
+	 * @param payload      the payload to sumit.  only valid on non-get operations
+	 * @return
+	 *
+	 */
+	<T extends IResource> T execute(String httpMethod, String version, String kind, String namespace, String name, String subresource, IResource payload);
+
+	/**
+	 * Raw execution of a request
 	* @param httpMethod  HttpMethod (e.g. POST)
 	 * @param kind
 	 * @param namespace
@@ -219,6 +244,23 @@ public interface IClient extends ICapable, Cloneable {
 	 * @return the raw payload string
 	 */
 	<T extends Object> T execute(ITypeFactory factory, String httpMethod, String kind, String namespace, String name,
+								 String subresource, String subContext, JSONSerializeable payload,
+								 Map<String, String> params);
+
+	/**
+	 * @param factory     The factory to use for interpreting the response
+	 * @param httpMethod  HttpMethod (e.g. POST)
+	 * @param kind
+	 * @param version
+	 * @param namespace
+	 * @param name
+	 * @param subresource  subresource or capability
+	 * @param payload      the payload to sumit.  only valid on non-get operations
+	 * @param subContext   additional subContext
+	 * @param params
+	 * @return the raw payload string
+	 */
+	<T extends Object> T execute(ITypeFactory factory, String httpMethod, String version, String kind, String namespace, String name,
 								 String subresource, String subContext, JSONSerializeable payload,
 								 Map<String, String> params);
 

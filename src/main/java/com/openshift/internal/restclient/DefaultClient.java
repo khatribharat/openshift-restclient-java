@@ -210,6 +210,10 @@ public class DefaultClient implements IClient, IHttpConstants{
 		return execute(method.toString(), kind, namespace, name, subresource, payload);
 	}
 
+    private <T extends IResource> T execute(HttpMethod method, String version, String kind, String namespace, String name, String subresource, IResource payload) {
+        return execute(method.toString(), version, kind, namespace, name, subresource, payload);
+    }
+
 	@SuppressWarnings("unchecked")
 	public <T extends IResource> T execute(String method, String kind, String namespace, String name, String subresource, IResource payload, String subContext) {
 		return (T) execute(this.factory, method, kind, namespace, name, subresource, subContext, payload,
@@ -222,6 +226,13 @@ public class DefaultClient implements IClient, IHttpConstants{
 		return (T) execute(this.factory, method, kind, namespace, name, subresource, null, payload,
 				Collections.emptyMap());
 	}
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends IResource> T execute(String method, String version, String kind, String namespace, String name, String subresource, IResource payload) {
+        return (T) execute(this.factory, method, version, kind, namespace, name, subresource, null, payload,
+                Collections.emptyMap());
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -264,7 +275,46 @@ public class DefaultClient implements IClient, IHttpConstants{
 			throw new OpenShiftException(e, "Unable to execute request to %s", endpoint);
 		}
 	}
-	
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> T execute(ITypeFactory factory, String method, String version, String kind, String namespace, String name,
+						 String subresource, String subContext, JSONSerializeable payload, Map<String, String> params) {
+		if(factory == null) {
+			throw new OpenShiftException("ITypeFactory is null while trying to call IClient#execute");
+		}
+
+		if(params == null){
+			params = Collections.emptyMap();
+		}
+
+		if(ResourceKind.LIST.equals(kind))
+			throw new UnsupportedOperationException("Generic create operation not supported for resource type 'List'");
+		final URL endpoint = new URLBuilder(this.baseUrl, typeMapper)
+				.apiVersion(version)
+				.kind(kind)
+				.name(name)
+				.namespace(namespace)
+				.subresource(subresource)
+				.subContext(subContext)
+				.addParameters(params)
+				.build();
+
+		try {
+			Request request = newRequestBuilderTo(endpoint.toString())
+					.method(method, getPayload(method, payload))
+					.build();
+			LOGGER.debug("About to make {} request: {}", request.method(), request);
+			try(Response result = client.newCall(request).execute()){
+				String response =  result.body().string();
+				LOGGER.debug("Response: {}", response);
+				return (T) factory.createInstanceFrom(response);
+			}
+		} catch (IOException e){
+			throw new OpenShiftException(e, "Unable to execute request to %s", endpoint);
+		}
+	}
+
 	private RequestBody getPayload(String method, JSONSerializeable payload) {
 		switch(method.toUpperCase()){
 			case "GET":
@@ -332,6 +382,11 @@ public class DefaultClient implements IClient, IHttpConstants{
 	public <T extends IResource> T get(String kind, String name, String namespace) {
 		return execute(HttpMethod.GET, kind, namespace, name, null, null);
 	}
+
+    @Override
+    public <T extends IResource> T get(String version, String kind, String name, String namespace) {
+        return execute(HttpMethod.GET, version, kind, namespace, name, null, null);
+    }
 
 	public synchronized void initializeCapabilities(){
 		if(capabilitiesInitialized) return;

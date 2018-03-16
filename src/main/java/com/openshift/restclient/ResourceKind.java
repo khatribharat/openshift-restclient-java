@@ -56,6 +56,7 @@ public final class ResourceKind {
 	public static final String SECRET = "Secret";
 	public static final String SERVICE_ACCOUNT = "ServiceAccount";
 	public static final String CONFIG_MAP = "ConfigMap";
+	public static final String JOB = "Job";
 	/*
 	 * These are not true resources that can be used (mostly) in
 	 * RESTful operations
