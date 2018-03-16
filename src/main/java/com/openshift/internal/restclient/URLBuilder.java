@@ -147,7 +147,12 @@ public class URLBuilder {
 		}
 		url.append("/");
 		IVersionedApiResource apiResource = typeMappings.getEndpointFor(apiVersion, kind);
-		url.append(apiResource.getPrefix()).append("/").append(apiResource.getVersion());
+		url.append(apiResource.getPrefix());
+		String apiGroup = apiResource.getApiGroupName();
+		if (StringUtils.isNotEmpty(apiGroup)) {
+			url.append("/").append(apiGroup);
+		}
+		url.append("/").append(apiResource.getVersion());
 		if(namespace == null && apiResource.isNamespaced()) {
 			LOG.debug("The api endpoint for kind '{}' requires a namespace but none was provided. Will only work for priviledged user.", kind);
 		}
