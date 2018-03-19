@@ -89,7 +89,7 @@ public class URLBuilder {
 
 	public URLBuilder kind(String kind) {
 		if(!ResourceKind.values().contains(kind)) {
-			LOG.warn(String.format("There kind '%s' is not recognized by this client; this operation may fail.", kind));
+			LOG.warn(String.format("The kind '%s' is not recognized by this client; this operation may fail.", kind));
 		}
 		this.kind = kind;
 		return this;
